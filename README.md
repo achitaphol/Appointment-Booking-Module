@@ -24,6 +24,7 @@ See [STRUCTURE.md](./STRUCTURE.md) for a detailed description of the repository 
 The recommended way to run the complete project is Docker Compose. This requires:
 
 - Docker Desktop, or Docker Engine with Docker Compose
+- A Bash-compatible shell and OpenSSL for the first-time setup script
 - Sufficient free disk space for the application, PostgreSQL, and Redis images
 
 Node.js and pnpm are only required when running the frontend or backend directly on the host machine.
