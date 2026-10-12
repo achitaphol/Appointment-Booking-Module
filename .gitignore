@@ -1,0 +1,12 @@
+.env
+.DS_Store
+*.log
+*.tsbuildinfo
+
+frontend/node_modules/
+frontend/.next/
+frontend/AGENTS.md
+backend/node_modules/
+backend/dist/
+backend/coverage/
+backend/src/generated/prisma/

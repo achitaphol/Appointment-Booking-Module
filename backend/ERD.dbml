@@ -1,0 +1,192 @@
+Project hospital_appointment_booking {
+  database_type: 'PostgreSQL'
+  Note: 'Draft schema for review. A doctor has one primary department and may work in several assigned departments. Interpret local schedule dates and times in the configured hospital time zone, independent of the database session time zone. SQL migration and runtime rules are documented separately.'
+}
+
+Enum appointment_status {
+  booked
+  cancelled
+  completed
+}
+
+Table departments {
+  id uuid [pk]
+  code varchar(32) [not null, unique]
+  name varchar(120) [not null]
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table patients {
+  id uuid [pk]
+  medical_record_number varchar(32) [not null, unique]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  date_of_birth date
+  created_at timestamptz [not null, default: `now()`]
+}
+
+Table user_types {
+  id uuid [pk]
+  code varchar(32) [not null, unique]
+  name varchar(100) [not null]
+
+  Note: 'Job classification, not an authorization role. Example codes: doctor, nurse, receptionist, administrator. Add or rename classifications without changing the schema.'
+}
+
+Table users {
+  id uuid [pk]
+  user_type_id uuid [not null, ref: > user_types.id]
+  employee_code varchar(32) [not null, unique]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+
+  Note: 'Hospital workforce identity, including doctors. A user can exist without a login account. Patients are stored separately and do not log in.'
+}
+
+Table doctors {
+  id uuid [pk, ref: - users.id]
+  primary_department_id uuid [not null, ref: > departments.id]
+
+  indexes {
+    primary_department_id
+  }
+
+  Note: 'Doctor-specific record. Its id is the same as the corresponding users.id. primary_department_id is the main affiliation. Names and employee code are stored only in users. Require the linked user to have the doctor user type and the primary department to appear in doctor_departments.'
+}
+
+Table doctor_departments {
+  doctor_id uuid [not null, ref: > doctors.id]
+  department_id uuid [not null, ref: > departments.id]
+
+  indexes {
+    (doctor_id, department_id) [pk]
+    department_id
+  }
+
+  Note: 'Departments where the doctor is assigned to work, including the primary department. A schedule may only use an assigned department. Keep the primary-department membership when assignments change.'
+}
+
+Table user_accounts {
+  id uuid [pk]
+  user_id uuid [not null, ref: > users.id]
+  department_id uuid [not null, ref: > departments.id]
+  email citext [not null, note: 'Case-insensitive email; requires the PostgreSQL citext extension.']
+  password_hash varchar(255) [not null, note: 'Store a password hash produced by a suitable password hashing algorithm, never the raw password.']
+  is_active boolean [not null, default: true]
+  password_changed_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    user_id [unique]
+    email [unique]
+  }
+
+  Note: 'At most one account per user. Email is unique across the system. Login verifies email, password, active flags, and the selected department against this account department. For doctors, the account department must equal doctors.primary_department_id. Appointment booking and cancellation are limited to this account department. Roles grant actions, not cross-department scope.'
+}
+
+Table roles {
+  code varchar(32) [pk]
+  name varchar(100) [not null]
+
+  Note: 'Authorization role, separate from user_types. System-defined codes: administrator, scheduler, schedule_manager, clinician, clinical_delegate. No role grants cross-department appointment booking.'
+}
+
+Table user_account_roles {
+  user_account_id uuid [not null, ref: > user_accounts.id]
+  role_code varchar(32) [not null, ref: > roles.code]
+
+  indexes {
+    (user_account_id, role_code) [pk]
+    role_code
+  }
+
+  Note: 'An account may hold multiple roles. Department-scoped actions use user_accounts.department_id; roles never carry their own department scope.'
+}
+
+Table appointment_types {
+  id uuid [pk]
+  code varchar(32) [not null, unique]
+  name varchar(100) [not null]
+
+  Note: 'Seed at least new_patient_visit, follow_up_visit, consultation, and procedure. Durations are configured per department.'
+}
+
+Table department_appointment_types {
+  department_id uuid [not null, ref: > departments.id]
+  appointment_type_id uuid [not null, ref: > appointment_types.id]
+  duration_minutes int [not null, note: 'Must be greater than zero.']
+  is_bookable boolean [not null, default: true]
+
+  indexes {
+    (department_id, appointment_type_id) [pk]
+  }
+
+  Note: 'Defines which appointment types a department accepts and their durations. Additional department-specific booking rules can be added here when specified.'
+}
+
+Table doctor_schedules {
+  id uuid [pk]
+  doctor_id uuid [not null]
+  department_id uuid [not null]
+  schedule_date date [not null]
+  start_time time [not null]
+  end_time time [not null]
+  is_bookable boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (id, doctor_id, department_id) [unique]
+    (doctor_id, schedule_date)
+    (doctor_id, schedule_date, start_time) [unique]
+  }
+
+  Note: 'One dated working interval in an assigned department. start_time < end_time; intervals cannot cross midnight or overlap for one doctor across departments. is_bookable false closes the whole interval; breaks are stored only in doctor_schedule_breaks. Changing an interval or bookability must preserve existing non-cancelled appointments.'
+}
+
+Ref: doctor_schedules.(doctor_id, department_id) > doctor_departments.(doctor_id, department_id)
+
+Table doctor_schedule_breaks {
+  id uuid [pk]
+  doctor_schedule_id uuid [not null, ref: > doctor_schedules.id]
+  start_time time [not null]
+  end_time time [not null]
+
+  indexes {
+    (doctor_schedule_id, start_time) [unique]
+  }
+
+  Note: 'Require start_time < end_time. A break must lie within its schedule, must not cross midnight, and must not overlap another break in that schedule or a non-cancelled appointment.'
+}
+
+Table appointments {
+  id uuid [pk]
+  patient_id uuid [not null, ref: > patients.id]
+  doctor_schedule_id uuid [not null]
+  doctor_id uuid [not null]
+  department_id uuid [not null]
+  appointment_type_id uuid [not null]
+  starts_at timestamptz [not null]
+  ends_at timestamptz [not null]
+  status appointment_status [not null, default: 'booked']
+  reason_for_visit text
+  created_by_user_account_id uuid [not null, ref: > user_accounts.id]
+  created_at timestamptz [not null, default: `now()`]
+  cancellation_reason text
+  cancelled_by_user_account_id uuid [ref: > user_accounts.id]
+  cancelled_at timestamptz
+  completed_at timestamptz
+
+  indexes {
+    (doctor_id, starts_at)
+    (doctor_schedule_id, starts_at)
+    (patient_id, starts_at)
+    (department_id, appointment_type_id)
+  }
+
+  Note: 'New appointments start booked. The created_by and cancelled_by accounts identify the staff member who performed each action. At action time, booking and cancellation require the actor account department to equal the appointment service department. starts_at < ends_at; interval must match the configured duration, be in the future at creation, be inside a bookable schedule, and avoid breaks. ends_at is a booking snapshot. doctor_id enables a PostgreSQL partial GiST exclusion constraint for overlapping booked or completed appointments across all schedules. Cancelled appointments release their interval. Only booked may transition to cancelled or completed; both outcomes are terminal. Cancelled requires cancellation_reason, cancelled_by_user_account_id, and cancelled_at, and no completed_at. Completed requires completed_at and no cancellation metadata. Booked has neither. Historical edits must not fail solely because the stored start time is now in the past.'
+}
+
+Ref: appointments.(doctor_schedule_id, doctor_id, department_id) > doctor_schedules.(id, doctor_id, department_id)
+Ref: appointments.(department_id, appointment_type_id) > department_appointment_types.(department_id, appointment_type_id)

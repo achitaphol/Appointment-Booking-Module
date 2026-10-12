@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AppointmentStatus {
+  booked
+  cancelled
+  completed
+
+  @@map("appointment_status")
+}
+
+model Department {
+  id               String                      @id @db.Uuid
+  code             String                      @unique @db.VarChar(32)
+  name             String                      @db.VarChar(120)
+  createdAt        DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+  primaryDoctors   Doctor[]                    @relation("PrimaryDepartment")
+  doctorAssignments DoctorDepartment[]
+  userAccounts     UserAccount[]
+  appointmentTypes DepartmentAppointmentType[]
+  schedules        DoctorSchedule[]
+  appointments     Appointment[]
+
+  @@map("departments")
+}
+
+model Patient {
+  id                  String        @id @db.Uuid
+  medicalRecordNumber String        @unique @map("medical_record_number") @db.VarChar(32)
+  firstName           String        @map("first_name") @db.VarChar(100)
+  lastName            String        @map("last_name") @db.VarChar(100)
+  dateOfBirth         DateTime?     @map("date_of_birth") @db.Date
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  appointments        Appointment[]
+
+  @@map("patients")
+}
+
+model UserType {
+  id    String @id @db.Uuid
+  code  String @unique @db.VarChar(32)
+  name  String @db.VarChar(100)
+  users User[]
+
+  @@map("user_types")
+}
+
+model User {
+  id           String       @id @db.Uuid
+  userTypeId   String       @map("user_type_id") @db.Uuid
+  employeeCode String       @unique @map("employee_code") @db.VarChar(32)
+  firstName    String       @map("first_name") @db.VarChar(100)
+  lastName     String       @map("last_name") @db.VarChar(100)
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  userType     UserType     @relation(fields: [userTypeId], references: [id])
+  doctor       Doctor?
+  account      UserAccount?
+
+  @@map("users")
+}
+
+model Doctor {
+  id                  String             @id @db.Uuid
+  primaryDepartmentId String             @map("primary_department_id") @db.Uuid
+  user                User               @relation(fields: [id], references: [id])
+  primaryDepartment   Department         @relation("PrimaryDepartment", fields: [primaryDepartmentId], references: [id])
+  departments         DoctorDepartment[]
+  schedules           DoctorSchedule[]
+  appointments        Appointment[]
+
+  @@index([primaryDepartmentId])
+  @@map("doctors")
+}
+
+model DoctorDepartment {
+  doctorId     String           @map("doctor_id") @db.Uuid
+  departmentId String           @map("department_id") @db.Uuid
+  doctor       Doctor           @relation(fields: [doctorId], references: [id])
+  department   Department       @relation(fields: [departmentId], references: [id])
+  schedules    DoctorSchedule[]
+
+  @@id([doctorId, departmentId])
+  @@index([departmentId])
+  @@map("doctor_departments")
+}
+
+model UserAccount {
+  id                    String        @id @db.Uuid
+  userId                String        @unique @map("user_id") @db.Uuid
+  departmentId          String        @map("department_id") @db.Uuid
+  email                 String        @unique @db.Citext
+  passwordHash          String        @map("password_hash") @db.VarChar(255)
+  isActive              Boolean       @default(true) @map("is_active")
+  passwordChangedAt     DateTime?     @map("password_changed_at") @db.Timestamptz(6)
+  createdAt             DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  user                  User          @relation(fields: [userId], references: [id])
+  department            Department    @relation(fields: [departmentId], references: [id])
+  createdAppointments   Appointment[] @relation("AppointmentCreator")
+  cancelledAppointments Appointment[] @relation("AppointmentCanceller")
+  roles                 UserAccountRole[]
+
+  @@map("user_accounts")
+}
+
+model Role {
+  code     String            @id @db.VarChar(32)
+  name     String            @db.VarChar(100)
+  accounts UserAccountRole[]
+
+  @@map("roles")
+}
+
+model UserAccountRole {
+  userAccountId String      @map("user_account_id") @db.Uuid
+  roleCode      String      @map("role_code") @db.VarChar(32)
+  account       UserAccount @relation(fields: [userAccountId], references: [id])
+  role          Role        @relation(fields: [roleCode], references: [code])
+
+  @@id([userAccountId, roleCode])
+  @@index([roleCode])
+  @@map("user_account_roles")
+}
+
+model AppointmentType {
+  id          String                      @id @db.Uuid
+  code        String                      @unique @db.VarChar(32)
+  name        String                      @db.VarChar(100)
+  departments DepartmentAppointmentType[]
+  appointments Appointment[]
+
+  @@map("appointment_types")
+}
+
+model DepartmentAppointmentType {
+  departmentId     String          @map("department_id") @db.Uuid
+  appointmentTypeId String         @map("appointment_type_id") @db.Uuid
+  durationMinutes  Int             @map("duration_minutes")
+  isBookable       Boolean         @default(true) @map("is_bookable")
+  department       Department      @relation(fields: [departmentId], references: [id])
+  appointmentType  AppointmentType @relation(fields: [appointmentTypeId], references: [id])
+  appointments     Appointment[]
+
+  @@id([departmentId, appointmentTypeId])
+  @@map("department_appointment_types")
+}
+
+model DoctorSchedule {
+  id              String                @id @db.Uuid
+  doctorId        String                @map("doctor_id") @db.Uuid
+  departmentId    String                @map("department_id") @db.Uuid
+  scheduleDate    DateTime              @map("schedule_date") @db.Date
+  startTime       DateTime              @map("start_time") @db.Time(6)
+  endTime         DateTime              @map("end_time") @db.Time(6)
+  isBookable      Boolean               @default(true) @map("is_bookable")
+  createdAt       DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  doctor          Doctor                @relation(fields: [doctorId], references: [id])
+  department      Department            @relation(fields: [departmentId], references: [id])
+  assignment      DoctorDepartment      @relation(fields: [doctorId, departmentId], references: [doctorId, departmentId])
+  breaks          DoctorScheduleBreak[]
+  appointments    Appointment[]
+
+  @@unique([id, doctorId, departmentId])
+  @@unique([doctorId, scheduleDate, startTime])
+  @@index([doctorId, scheduleDate])
+  @@map("doctor_schedules")
+}
+
+model DoctorScheduleBreak {
+  id               String         @id @db.Uuid
+  doctorScheduleId String         @map("doctor_schedule_id") @db.Uuid
+  startTime        DateTime       @map("start_time") @db.Time(6)
+  endTime          DateTime       @map("end_time") @db.Time(6)
+  schedule         DoctorSchedule @relation(fields: [doctorScheduleId], references: [id])
+
+  @@unique([doctorScheduleId, startTime])
+  @@map("doctor_schedule_breaks")
+}
+
+model Appointment {
+  id                       String                    @id @db.Uuid
+  patientId                String                    @map("patient_id") @db.Uuid
+  doctorScheduleId         String                    @map("doctor_schedule_id") @db.Uuid
+  doctorId                 String                    @map("doctor_id") @db.Uuid
+  departmentId             String                    @map("department_id") @db.Uuid
+  appointmentTypeId        String                    @map("appointment_type_id") @db.Uuid
+  startsAt                 DateTime                  @map("starts_at") @db.Timestamptz(6)
+  endsAt                   DateTime                  @map("ends_at") @db.Timestamptz(6)
+  status                   AppointmentStatus         @default(booked)
+  reasonForVisit           String?                   @map("reason_for_visit") @db.Text
+  createdByUserAccountId   String                    @map("created_by_user_account_id") @db.Uuid
+  createdAt                DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  cancellationReason       String?                   @map("cancellation_reason") @db.Text
+  cancelledByUserAccountId String?                   @map("cancelled_by_user_account_id") @db.Uuid
+  cancelledAt              DateTime?                 @map("cancelled_at") @db.Timestamptz(6)
+  completedAt              DateTime?                 @map("completed_at") @db.Timestamptz(6)
+  patient                  Patient                   @relation(fields: [patientId], references: [id])
+  doctor                   Doctor                    @relation(fields: [doctorId], references: [id])
+  department               Department                @relation(fields: [departmentId], references: [id])
+  appointmentType          AppointmentType           @relation(fields: [appointmentTypeId], references: [id])
+  departmentAppointmentType DepartmentAppointmentType @relation(fields: [departmentId, appointmentTypeId], references: [departmentId, appointmentTypeId])
+  schedule                 DoctorSchedule            @relation(fields: [doctorScheduleId, doctorId, departmentId], references: [id, doctorId, departmentId])
+  createdBy                UserAccount               @relation("AppointmentCreator", fields: [createdByUserAccountId], references: [id])
+  cancelledBy              UserAccount?              @relation("AppointmentCanceller", fields: [cancelledByUserAccountId], references: [id])
+
+  @@index([doctorId, startsAt])
+  @@index([doctorScheduleId, startsAt])
+  @@index([patientId, startsAt])
+  @@index([departmentId, appointmentTypeId])
+  @@map("appointments")
+}

@@ -1,0 +1,595 @@
+{
+  "version": "3.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "relationshipMode": "All",
+    "tablePositions": [
+      {
+        "name": "user",
+        "schemaName": "public",
+        "x": 12,
+        "y": 12
+      },
+      {
+        "name": "departments",
+        "schemaName": "public",
+        "x": 0,
+        "y": 50
+      },
+      {
+        "name": "doctors",
+        "schemaName": "public",
+        "x": 332.9796875,
+        "y": 50
+      },
+      {
+        "name": "doctor_departments",
+        "schemaName": "public",
+        "x": 701.54755859375,
+        "y": 50
+      },
+      {
+        "name": "patients",
+        "schemaName": "public",
+        "x": 1070.1154296875,
+        "y": 50
+      },
+      {
+        "name": "staff",
+        "schemaName": "public",
+        "x": 0,
+        "y": 260
+      },
+      {
+        "name": "appointment_types",
+        "schemaName": "public",
+        "x": 332.9796875,
+        "y": 324
+      },
+      {
+        "name": "department_appointment_types",
+        "schemaName": "public",
+        "x": 701.54755859375,
+        "y": 228
+      },
+      {
+        "name": "doctor_schedules",
+        "schemaName": "public",
+        "x": 1070.1154296875,
+        "y": 324
+      },
+      {
+        "name": "schedule_breaks",
+        "schemaName": "public",
+        "x": 0,
+        "y": 534
+      },
+      {
+        "name": "appointments",
+        "schemaName": "public",
+        "x": 332.9796875,
+        "y": 502
+      },
+      {
+        "name": "staff_accounts",
+        "schemaName": "public",
+        "x": 0,
+        "y": 1192
+      },
+      {
+        "name": "staff_members",
+        "schemaName": "public",
+        "x": 0,
+        "y": 1562
+      },
+      {
+        "name": "doctor_schedule_breaks",
+        "schemaName": "public",
+        "x": 332.9796875,
+        "y": 1562
+      },
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 0,
+        "y": 1772
+      },
+      {
+        "name": "user_accounts",
+        "schemaName": "public",
+        "x": 332.9796875,
+        "y": 1772
+      },
+      {
+        "name": "user_types",
+        "schemaName": "public",
+        "x": 0,
+        "y": 2142
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "doctors",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "doctor_id"
+        ],
+        "secondTableName": "doctor_departments",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "departments",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "department_id"
+        ],
+        "secondTableName": "doctor_departments",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "departments",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "department_id"
+        ],
+        "secondTableName": "department_appointment_types",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "appointment_types",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "appointment_type_id"
+        ],
+        "secondTableName": "department_appointment_types",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "doctor_id",
+          "department_id"
+        ],
+        "firstTableName": "doctor_schedules",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "doctor_id",
+          "department_id"
+        ],
+        "secondTableName": "doctor_departments",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "doctor_schedules",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "schedule_id"
+        ],
+        "secondTableName": "schedule_breaks",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "patients",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "patient_id"
+        ],
+        "secondTableName": "appointments",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "staff",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "created_by_staff_id"
+        ],
+        "secondTableName": "appointments",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "staff",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "cancelled_by_staff_id"
+        ],
+        "secondTableName": "appointments",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "schedule_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "doctor_schedules",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "department_id",
+          "appointment_type_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "department_id",
+          "appointment_type_id"
+        ],
+        "secondTableName": "department_appointment_types",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "staff",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "staff_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "departments",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "department_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "created_by_account_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "cancelled_by_account_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "staff_members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "staff_member_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "doctor_schedules",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "doctor_schedule_id"
+        ],
+        "secondTableName": "doctor_schedule_breaks",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "doctor_schedule_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "doctor_schedules",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "created_by_staff_account_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "cancelled_by_staff_account_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "staff_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_id"
+        ],
+        "secondTableName": "user_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "departments",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "department_id"
+        ],
+        "secondTableName": "user_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "created_by_user_account_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "user_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "cancelled_by_user_account_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "user_accounts",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "user_types",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "user_type_id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "users",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "doctors",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "departments",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "department_id"
+        ],
+        "secondTableName": "doctors",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "doctor_id",
+          "department_id"
+        ],
+        "firstTableName": "doctor_schedules",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "department_id"
+        ],
+        "secondTableName": "doctors",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "departments",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "primary_department_id"
+        ],
+        "secondTableName": "doctors",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "doctor_schedule_id",
+          "doctor_id",
+          "department_id"
+        ],
+        "firstTableName": "appointments",
+        "firstSchemaName": "public",
+        "firstRelation": "*",
+        "secondFieldNames": [
+          "id",
+          "doctor_id",
+          "department_id"
+        ],
+        "secondTableName": "doctor_schedules",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      }
+    ]
+  },
+  "views": {}
+}
