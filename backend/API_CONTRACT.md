@@ -90,7 +90,7 @@ No separate `GET /departments`, doctor detail, patient detail, schedule detail, 
 }
 ```
 
-Login failures return the same generic `401` response whether the email, password, department, or account status is wrong. JWT bearer delivery is implemented. The frontend stores the short-lived token in an HttpOnly same-site cookie through its own login route. No refresh or logout flow is included in this MVP yet.
+Login failures return the same generic `401` response whether the email, password, department, or account status is wrong. JWT bearer delivery is implemented. The frontend stores the short-lived token in an HttpOnly same-site cookie through its own login route and clears that cookie through its logout route. The backend remains stateless: no refresh-token or server-side token-revocation service is included in this MVP.
 
 `GET /api/v1/auth/me` returns the same safe account fields (`id`, `userId`, `userType`, `department`, and `roles`) under `data`, without a token.
 

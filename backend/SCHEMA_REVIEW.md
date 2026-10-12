@@ -1,6 +1,6 @@
 # Appointment Schema Review
 
-This document records the database rules that accompany [ERD.dbml](./ERD.dbml). The Prisma schema and migrations implement the relational structure and selected constraints, but the cross-table and authorization rules below still require application logic or further database enforcement.
+This document records the database rules that accompany [ERD.dbml](./ERD.dbml). The Prisma schema and migrations implement the relational structure, row checks, foreign keys, and overlap exclusions. The application implements authorization and cross-table workflow validation transactionally. Rules that would need database triggers to protect against untrusted direct database writers are identified below.
 
 ## Decisions and Changes
 
@@ -21,9 +21,9 @@ This document records the database rules that accompany [ERD.dbml](./ERD.dbml). 
 
 The appointment's `department_id` identifies the service department. The account's `department_id` identifies the department selected during login and is also the boundary for creating and cancelling appointments. These IDs must match when a booking or cancellation action occurs. The account foreign key records who acted but does not itself grant permission. The `scheduler` role is required in addition to the department match. Changing an account's department later does not rewrite historical actor information.
 
-## Rules to Enforce in PostgreSQL
+## Rules and Enforcement Boundaries
 
-The DBML represents tables, uniqueness, and foreign keys. The following rules need a migration or transactional database logic before booking can be considered safe:
+The DBML represents tables, uniqueness, and foreign keys. The following rules are enforced by the committed migrations, transactional application logic, or both. Database triggers would be required only if another untrusted application were permitted to bypass this API and write directly to PostgreSQL:
 
 1. Enable `citext` for case insensitive account email and `btree_gist` for the doctor UUID equality operator in an exclusion constraint.
 2. Add row checks for positive `duration_minutes`, `doctor_schedules.start_time < end_time`, `doctor_schedule_breaks.start_time < end_time`, and `appointments.starts_at < ends_at`.
@@ -75,4 +75,4 @@ After login, booking authorization must check both the `scheduler` role and that
 | Duration rule changes after an appointment exists | Existing `ends_at` remains unchanged. |
 | Historical appointment metadata is corrected without changing its interval | Not rejected merely because its start is now in the past. |
 
-The migrations implement the tables, foreign keys, selected row checks, and overlap exclusions. They do not yet enforce every cross-table rule listed here; authorization is not implemented in the application.
+The migrations implement the tables, foreign keys, row checks, status metadata checks, and overlap exclusions. The application implements role and department authorization, schedule ownership, time-zone conversion, and transactional cross-table validation. Not every cross-table rule is duplicated as a PostgreSQL trigger, so direct database writes remain an operator-only boundary.

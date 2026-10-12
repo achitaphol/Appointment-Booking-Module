@@ -170,8 +170,30 @@ The Prisma schema is in `backend/prisma/schema.prisma`; the initial migration is
 
 The initial SQL migration adds database-level checks and overlap exclusions. The API validates cross-table rules in transactions; direct database writers must not bypass that service logic.
 
+## Assumptions
+
+- The hospital operates in the `Asia/Bangkok` time zone. Schedule dates and times are entered as Bangkok-local values, while appointment timestamps are stored and returned as UTC.
+- A staff account belongs to one login department. Booking, cancellation, patient access, and appointment access are limited to that department; there is no cross-department booking role.
+- A doctor has one primary department and may also be assigned to additional departments. Doctors may manage only their own schedules in assigned departments.
+- Appointment types are shared reference records, while each department controls whether a type is bookable and defines its duration.
+- Available slot start times use 15-minute increments. An appointment may have a longer duration and must fit completely inside one bookable schedule without intersecting a break or occupied appointment.
+- `booked` and `completed` appointments occupy their time intervals. Cancelling an appointment releases its interval for a new booking.
+- Schedules are explicit dated intervals rather than recurring weekly templates. Schedule and break changes are prospective and must not invalidate existing appointments or rewrite elapsed schedule history.
+- The REST API is the controlled write boundary for application data. Operator provisioning commands are used for installation records that are intentionally outside the public API.
+
+## Known Limitations
+
+- Authentication uses a 15-minute JWT stored by the frontend in an HTTP-only, same-site cookie. Logout clears that cookie, but there is no refresh-token or server-side token-revocation service.
+- Login throttling is held in the backend process memory. A multi-replica deployment would require shared rate-limit storage.
+- Redis and BullMQ dependencies are prepared for future reminders or notifications, but this submission does not create queues, producers, processors, or workers.
+- Some cross-table invariants are enforced transactionally by the API rather than by PostgreSQL triggers. Untrusted applications must not write directly to the database.
+- The included end-to-end suite requires a separately prepared `hlab_api_test` database and is not run by `init.sh`.
+- The demonstration seed intentionally creates no appointments so the reviewer can exercise the complete booking workflow from an empty appointment history.
+- The Docker Compose configuration targets local evaluation. Remote hosting, TLS termination, centralized logs, metrics, backups, and CI/CD are outside this submission.
+- The UI is designed for desktop hospital workflows and has not undergone formal accessibility, localization, or usability testing.
+
 ## Current Scope
 
 The backend container receives `DATABASE_URL`, `JWT_SECRET`, and `REDIS_URL`. The API uses PostgreSQL through Prisma. The frontend login flow loads departments from the backend and authenticates through a same-origin Next.js route that stores the access token in an HTTP-only cookie. Redis is reserved for future background jobs.
 
-The repository does not currently include BullMQ producers, processors, or workers, and it does not include deployment configuration for a hosting provider.
+The repository does not include production hosting configuration or active BullMQ jobs. Those boundaries are documented above rather than presented as completed functionality.

@@ -1,6 +1,6 @@
 # Appointment Booking Backend
 
-NestJS, Prisma, and PostgreSQL implementation of the staff appointment-booking API. See [API_CONTRACT.md](./API_CONTRACT.md) for the 19 endpoint contracts and [SCHEMA_REVIEW.md](./SCHEMA_REVIEW.md) for database rules.
+NestJS, Prisma, and PostgreSQL implementation of the staff appointment-booking API. See [API_CONTRACT.md](./API_CONTRACT.md) for the 20 method/path contracts (including health) and [SCHEMA_REVIEW.md](./SCHEMA_REVIEW.md) for database rules.
 
 The source follows MVC boundaries: `src/controllers/` handles HTTP requests and responses, `src/services/` contains application rules, and `prisma/schema.prisma` plus `src/models/` define and access the data model. JSON is the API's view representation. `src/security/` holds authentication guards and rate limiting; `src/common/` holds shared validation and error formatting. Controllers do not access Prisma directly.
 
@@ -66,4 +66,4 @@ Integration tests require a **separate** PostgreSQL database named `hlab_api_tes
 - New booking and schedule/break changes revalidate inside transactions. PostgreSQL exclusion constraints guard against overlapping doctor schedules, breaks, and non-cancelled appointments.
 - Login uses Argon2 password hashes and a 15-minute JWT bearer token. Roles and account active flags are loaded from the database on every protected request. Login attempts are throttled per IP in this single backend process; a multi-replica deployment needs shared rate-limit storage. There is no refresh-token or token-revocation service.
 - The current Prisma migration does not enforce every cross-table rule if another application writes directly to PostgreSQL. Use this API for normal writes and add database triggers if untrusted direct writers are introduced.
-- Redis and BullMQ are installed but no background jobs are required by the assignment or implemented yet. Frontend booking pages are not implemented.
+- Redis and BullMQ dependencies are installed, but no background jobs are required by the assignment or implemented. The frontend booking, appointment, patient, doctor, dashboard, and schedule workflows are connected to this API.
